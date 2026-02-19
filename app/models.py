@@ -1,6 +1,7 @@
-from sqlalchemy import String, Float, Integer, ForeignKey, UniqueConstraint
+from sqlalchemy import String, Float, ForeignKey, UniqueConstraint, BigInteger
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .db import Base
+
 
 class User(Base):
     __tablename__ = "users"
@@ -11,13 +12,17 @@ class User(Base):
 
     __table_args__ = (UniqueConstraint("username", name="uq_users_username"),)
 
-    transactions = relationship("Transaction", back_populates="user", cascade="all, delete-orphan")
+    transactions: Mapped[list["Transaction"]] = relationship(
+        "Transaction",
+        back_populates="user",
+        cascade="all, delete-orphan"
+    )
 
 
 class Transaction(Base):
     __tablename__ = "transactions"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True)         # UUID
+    id: Mapped[str] = mapped_column(String, primary_key=True)         # UUID (o tu string "tx-001")
     user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False)
 
     type: Mapped[str] = mapped_column(String, nullable=False)         # "GASTO" / "INGRESO"
@@ -26,7 +31,7 @@ class Transaction(Base):
     note: Mapped[str] = mapped_column(String, nullable=False, default="")
     date: Mapped[str] = mapped_column(String, nullable=False)         # "dd/MM/yyyy"
 
-    created_at: Mapped[int] = mapped_column(Integer, nullable=False)
-    updated_at: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
-    user = relationship("User", back_populates="transactions")
+    user: Mapped["User"] = relationship("User", back_populates="transactions")
